@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @Component
-@RequiredArgsConstructor
 public class ImageToPdfConverter implements FileConverter {
 
     @Override
