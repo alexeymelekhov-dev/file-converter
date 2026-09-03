@@ -1,6 +1,7 @@
 package com.amelexeymelekhov.fileconverter.service;
 
 import com.amelexeymelekhov.fileconverter.exception.ErrorMessage;
+import com.amelexeymelekhov.fileconverter.exception.FileStorageException;
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
@@ -24,7 +25,7 @@ public class FileStorageService {
                             .build()
             );
         } catch (Exception e) {
-            throw new RuntimeException(ErrorMessage.FAILED_DOWNLOAD_FILE.getMessage(), e);
+            throw new FileStorageException(ErrorMessage.FAILED_DOWNLOAD_FILE.getMessage(), e);
         }
     }
 
@@ -37,7 +38,7 @@ public class FileStorageService {
                             .stream(fileStream, -1, 10485760)
                             .build());
         } catch (Exception e) {
-            throw new RuntimeException(ErrorMessage.FAILED_UPLOAD_FILE.getMessage(), e);
+            throw new FileStorageException(ErrorMessage.FAILED_UPLOAD_FILE.getMessage(), e);
         }
     }
 

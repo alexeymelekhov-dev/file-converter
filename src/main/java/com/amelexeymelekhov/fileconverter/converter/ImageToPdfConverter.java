@@ -1,7 +1,7 @@
 package com.amelexeymelekhov.fileconverter.converter;
 
 import com.amelexeymelekhov.fileconverter.exception.ErrorMessage;
-import lombok.RequiredArgsConstructor;
+import com.amelexeymelekhov.fileconverter.exception.FileConversionException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -49,7 +49,7 @@ public class ImageToPdfConverter implements FileConverter {
             return new ByteArrayInputStream(out.toByteArray());
 
         } catch (IOException e) {
-            throw new RuntimeException(ErrorMessage.FAILED_CONVERT_IMAGE.getMessage(), e);
+            throw new FileConversionException(ErrorMessage.FAILED_CONVERT_IMAGE.getMessage(), e);
         }
     }
 }
