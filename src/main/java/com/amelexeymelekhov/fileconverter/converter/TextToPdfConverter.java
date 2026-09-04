@@ -2,7 +2,6 @@ package com.amelexeymelekhov.fileconverter.converter;
 
 import com.amelexeymelekhov.fileconverter.exception.ErrorMessage;
 import com.amelexeymelekhov.fileconverter.exception.FileConversionException;
-import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
