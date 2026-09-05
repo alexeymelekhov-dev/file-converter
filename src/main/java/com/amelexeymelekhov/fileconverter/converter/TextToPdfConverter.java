@@ -2,7 +2,6 @@ package com.amelexeymelekhov.fileconverter.converter;
 
 import com.amelexeymelekhov.fileconverter.exception.ErrorMessage;
 import com.amelexeymelekhov.fileconverter.exception.FileConversionException;
-import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -19,53 +18,56 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class TextToPdfConverter implements FileConverter {
 
+    private static final int FONT_SIZE = 12;
+    private static final float TEXT_POSITION_X = 50;
+    private static final float TEXT_POSITION_Y = 700;
+    private static final float LINE_SPACING = 30;
+
     @Override
     public boolean supports(String fileType) {
-        return "txt".equalsIgnoreCase(fileType);
+        return FileType.TXT.getExtension().equalsIgnoreCase(fileType);
     }
 
     @Override
     public InputStream convert(InputStream fileStream) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        try {
+        try (PDDocument document = new PDDocument()) {
             byte[] bytes = fileStream.readAllBytes();
             String text = new String(bytes, StandardCharsets.UTF_8);
 
             String[] lines = text.split("\\r?\\n");
 
-            try (PDDocument document = new PDDocument()) {
-                // Create a new page
-                PDPage page = new PDPage();
-                document.addPage(page);
+            // Create a new page
+            PDPage page = new PDPage();
+            document.addPage(page);
 
-                // Create content stream for writing
-                try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+            // Create content stream for writing
+            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
 
-                    // Set font and size
-                    contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 12);
+                // Set font and size
+                contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), FONT_SIZE);
 
-                    // Begin text block
-                    contentStream.beginText();
+                // Begin text block
+                contentStream.beginText();
 
-                    // Set position (x=50, y=700 from bottom-left)
-                    contentStream.newLineAtOffset(50, 700);
+                // Set position (x=50, y=700 from bottom-left)
+                contentStream.newLineAtOffset(TEXT_POSITION_X, TEXT_POSITION_Y);
 
-                    // Write text
-                    for (String line : lines) {
-                        contentStream.showText(line);
-                        // Move to next line
-                        contentStream.newLineAtOffset(0, -30);
-                    }
-
-                    // End text block
-                    contentStream.endText();
+                // Write text
+                for (String line : lines) {
+                    contentStream.showText(line);
+                    // Move to next line
+                    contentStream.newLineAtOffset(0, -LINE_SPACING);
                 }
 
-                document.save(out);
-
-                return new ByteArrayInputStream(out.toByteArray());
+                // End text block
+                contentStream.endText();
             }
+
+            document.save(out);
+
+            return new ByteArrayInputStream(out.toByteArray());
         } catch (IOException e) {
             throw new FileConversionException(ErrorMessage.FAILED_CONVERT_TEXT.getMessage(), e);
         }
