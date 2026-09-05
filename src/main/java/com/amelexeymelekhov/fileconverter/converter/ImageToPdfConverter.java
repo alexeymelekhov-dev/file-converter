@@ -16,11 +16,16 @@ import java.io.InputStream;
 @Component
 public class ImageToPdfConverter implements FileConverter {
 
+    private static final float IMAGE_X = 50;
+    private static final float IMAGE_Y = 400;
+    private static final float IMAGE_WIDTH = 400;
+    private static final float IMAGE_HEIGHT = 250;
+    private static final String IMAGE_NAME = "image";
+
     @Override
     public boolean supports(String fileType) {
-        return "png".equalsIgnoreCase(fileType)
-                || "jpg".equalsIgnoreCase(fileType)
-                || "jpeg".equalsIgnoreCase(fileType);
+        return FileType.PNG.getExtension().equalsIgnoreCase(fileType)
+                || FileType.JPG.getExtension().equalsIgnoreCase(fileType);
     }
 
     @Override
@@ -37,11 +42,11 @@ public class ImageToPdfConverter implements FileConverter {
                 PDImageXObject image = PDImageXObject.createFromByteArray(
                         document,
                         fileStream.readAllBytes(),
-                        "image"
+                        IMAGE_NAME
                 );
 
                 // Draw image below the title
-                contentStream.drawImage(image, 50, 400, 400, 250);
+                contentStream.drawImage(image, IMAGE_X, IMAGE_Y, IMAGE_WIDTH, IMAGE_HEIGHT);
             }
 
             document.save(out);
