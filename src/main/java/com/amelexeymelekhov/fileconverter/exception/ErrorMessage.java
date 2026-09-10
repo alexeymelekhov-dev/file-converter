@@ -9,6 +9,7 @@ public enum ErrorMessage {
     UNSUPPORTED_FILE_TYPE("Unsupported file type: "),
     FILE_HAS_NO_EXTENSION("File has no extension: "),
     FAILED_SERIALIZE_EVENT("Failed to serialize event"),
+    FAILED_DESERIALIZE_EVENT("Failed to deserialize Kafka message"),
     FAILED_DOWNLOAD_FILE("Failed to download file from MinIO"),
     FAILED_UPLOAD_FILE("Failed to upload file"),
     FAILED_EXTRACT_ZIP("Failed to extract ZIP"),
