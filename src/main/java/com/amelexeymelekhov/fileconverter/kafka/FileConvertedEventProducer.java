@@ -15,7 +15,7 @@ import java.time.OffsetDateTime;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OutboxEventPublisher {
+public class FileConvertedEventProducer {
 
     private final OutboxRepository outboxRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;

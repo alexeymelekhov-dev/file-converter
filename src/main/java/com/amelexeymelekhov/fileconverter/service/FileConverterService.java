@@ -1,9 +1,11 @@
 package com.amelexeymelekhov.fileconverter.service;
 
 import com.amelexeymelekhov.fileconverter.dto.ExtractFileDTO;
+import com.amelexeymelekhov.fileconverter.dto.FileConvertedDTO;
 import com.amelexeymelekhov.fileconverter.dto.FileConvertedEventDTO;
 import com.amelexeymelekhov.fileconverter.dto.FileUploadedEventDTO;
 import com.amelexeymelekhov.fileconverter.exception.ErrorMessage;
+import com.amelexeymelekhov.fileconverter.model.FileStatus;
 import com.amelexeymelekhov.fileconverter.model.Inbox;
 import com.amelexeymelekhov.fileconverter.model.Outbox;
 import com.amelexeymelekhov.fileconverter.repository.InboxRepository;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,12 +46,21 @@ public class FileConverterService {
             return;
         }
 
-        String fileType = getFileExtension(dto.objectName());
+        try {
+            String fileType = getFileExtension(dto.objectName());
 
-        if (ZIP_FILE_TYPE.equals(fileType)) {
-            convertZip(dto);
-        } else {
-            convertSingleFile(dto);
+            if (ZIP_FILE_TYPE.equals(fileType)) {
+                convertZip(dto);
+            } else {
+                convertSingleFile(dto);
+            }
+        } catch (Exception e) {
+            saveOutbox(new FileConvertedEventDTO(
+                    dto.eventId(),
+                    dto.bucket(),
+                    FileStatus.FAILED,
+                    List.of()
+            ));
         }
 
         saveInbox(dto.eventId());
@@ -61,19 +73,31 @@ public class FileConverterService {
         );
 
         List<ExtractFileDTO> extractedFiles = zipExtractorService.extract(zipFile);
+        List<FileConvertedDTO> files = new ArrayList<>();
 
         for (ExtractFileDTO file : extractedFiles) {
             if (isSystemFile(file.fileName())) {
                 continue;
             }
 
-            convertAndSaveOutbox(
-                    dto.eventId(),
+            String pdfFileName = fileConversionService.convert(
                     dto.bucket(),
                     file.fileName(),
                     new ByteArrayInputStream(file.content())
             );
+
+            FileConvertedDTO fileConvertedDTO = new FileConvertedDTO(pdfFileName);
+            files.add(fileConvertedDTO);
         }
+
+        FileConvertedEventDTO event = new FileConvertedEventDTO(
+                dto.eventId(),
+                dto.bucket(),
+                FileStatus.CONVERTED,
+                files
+        );
+
+        saveOutbox(event);
     }
 
     private void convertSingleFile(FileUploadedEventDTO dto) {
@@ -82,30 +106,21 @@ public class FileConverterService {
                 dto.objectName()
         );
 
-        convertAndSaveOutbox(
-                dto.eventId(),
+        String pdfFileName = fileConversionService.convert(
                 dto.bucket(),
                 dto.objectName(),
                 file
         );
-    }
 
-    private void convertAndSaveOutbox(
-            UUID eventId,
-            String bucket,
-            String fileName,
-            InputStream file
-    ) {
-        String pdfFileName = fileConversionService.convert(
-                bucket,
-                fileName,
-                file
-        );
+        List<FileConvertedDTO> files = new ArrayList<>();
+        FileConvertedDTO fileConvertedDTO = new FileConvertedDTO(pdfFileName);
+        files.add(fileConvertedDTO);
 
         FileConvertedEventDTO event = new FileConvertedEventDTO(
-                eventId,
-                bucket,
-                pdfFileName
+                dto.eventId(),
+                dto.bucket(),
+                FileStatus.CONVERTED,
+                files
         );
 
         saveOutbox(event);
