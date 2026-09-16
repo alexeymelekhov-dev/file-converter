@@ -2,6 +2,13 @@ databaseChangeLog:
   - changeSet:
       id: 001-create-inbox
       author: Alexey
+
+      preConditions:
+        - onFail: HALT
+        - not:
+            tableExists:
+              tableName: inbox
+
       changes:
         - createTable:
             tableName: inbox
@@ -18,3 +25,7 @@ databaseChangeLog:
                   defaultValueDate: now()
                   constraints:
                     nullable: false
+
+      rollback:
+        - dropTable:
+            tableName: inbox
